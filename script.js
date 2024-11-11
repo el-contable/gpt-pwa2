@@ -119,6 +119,15 @@ function toggleSidebar() {
     document.body.classList.toggle("sidebar-active");
 }
 
+function adjustChatContainerHeight() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+window.addEventListener('resize', adjustChatContainerHeight);
+window.addEventListener('load', adjustChatContainerHeight);
+
+
 document.getElementById("sendFullscreenBtn").addEventListener("click", () => {
     const input = fullscreenInput.value.trim();
     if (input) {
