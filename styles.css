@@ -194,3 +194,31 @@ body {
 input, textarea {
   touch-action: manipulation;
 }
+.bot-message-card {
+  background-color: #f4f4f5;
+  border: 1px solid #e0e0e0;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0;
+  color: #333;
+}
+
+.bot-message-card p {
+  margin: 0.5em 0;
+  line-height: 1.5;
+}
+
+.bot-message-card ul, .bot-message-card ol {
+  padding-left: 20px;
+}
+
+.bot-message-card li {
+  margin-bottom: 5px;
+}
+
+.typing-indicator {
+  color: #aaa;
+  font-style: italic;
+  padding: 5px;
+  margin: 5px 0;
+}

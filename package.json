@@ -8,6 +8,7 @@
     "build": "your-build-command"
   },
   "dependencies": {
+    "marked": "^15.0.0",
     "node-fetch": "^3.3.2"
   },
   "keywords": [],
