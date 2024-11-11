@@ -189,3 +189,6 @@ body {
   border-radius: 8px;
   align-self: flex-start;
 }
+input, textarea {
+  touch-action: manipulation;
+}
