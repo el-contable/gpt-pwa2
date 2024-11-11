@@ -84,7 +84,7 @@ body {
   color: #fff;
   -webkit-overflow-scrolling: touch;
   min-height: calc(100vh - 60px); /* Adjust based on header/footer sizes */
-  margin-top: 50px; /* Adds 40px space at the top */
+  margin-top: 80px; /* Adds 40px space at the top */
 }
 
 
