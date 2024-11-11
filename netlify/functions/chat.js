@@ -4,7 +4,7 @@ const fetch = require("node-fetch");
 exports.handler = async (event) => {
     try {
         const { input } = JSON.parse(event.body);
-        const apiKey = process.env.OPENAI_API_KEY; // Accessed from Netlify environment variables
+        const apiKey = process.env.OPENAI_API_KEY;
 
         const response = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
@@ -13,7 +13,7 @@ exports.handler = async (event) => {
                 Authorization: `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                model: "gpt-4-turbo", // Replace with "gpt-4-0613" or a specific model
+                model: "gpt-4-turbo",
                 messages: [{ role: "user", content: input }],
                 max_tokens: 1000,
             }),
@@ -27,7 +27,7 @@ exports.handler = async (event) => {
             body: JSON.stringify({ reply: output }),
         };
     } catch (error) {
-        console.error("Error:", error);
+        console.error("Error in serverless function:", error);
         return {
             statusCode: 500,
             body: JSON.stringify({ error: "Failed to fetch response from OpenAI API." }),
