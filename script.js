@@ -3,6 +3,63 @@ const fullscreenInput = document.getElementById("fullscreenInput");
 const mainInputBox = document.getElementById("inputBox");
 const chatContainer = document.getElementById("chatContainer");
 
+// Initialize IndexedDB
+function initDB() {
+  return new Promise((resolve, reject) => {
+      const request = indexedDB.open("ChatDB", 1);
+      request.onerror = (e) => reject("Database failed to open");
+      request.onsuccess = (e) => resolve(e.target.result);
+      request.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          db.createObjectStore("messages", { keyPath: "id", autoIncrement: true });
+      };
+  });
+}
+
+// Save message to IndexedDB
+async function saveMessage(type, content) {
+  const db = await initDB();
+  const transaction = db.transaction("messages", "readwrite");
+  transaction.objectStore("messages").add({ type, content });
+  transaction.oncomplete = () => db.close();
+}
+
+// Load chat history on page load
+async function loadHistory() {
+  const db = await initDB();
+  const transaction = db.transaction("messages", "readonly");
+  const store = transaction.objectStore("messages");
+  store.openCursor().onsuccess = function (e) {
+      const cursor = e.target.result;
+      if (cursor) {
+          displayMessage(cursor.value.type, cursor.value.content); // Use existing display function
+          cursor.continue();
+      }
+  };
+  transaction.oncomplete = () => db.close();
+}
+
+// Clear chat history
+async function clearHistory() {
+  const db = await initDB();
+  const transaction = db.transaction("messages", "readwrite");
+  transaction.objectStore("messages").clear();
+  transaction.oncomplete = () => {
+      db.close();
+      chatContainer.innerHTML = ""; // Clear UI
+  };
+}
+
+// Modify sendMessage() to save messages
+async function sendMessage(input) {
+  // ...existing code
+  saveMessage("user", input); // Save user message
+  saveMessage("bot", botReply); // Save bot response
+}
+
+document.addEventListener("DOMContentLoaded", loadHistory); // Load history on load
+
+
 // Helper function to format response text using Markdown and card layout
 function formatResponseText(rawText) {
     // Parse JSON if necessary
