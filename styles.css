@@ -81,6 +81,7 @@ body {
   padding: 20px;
   background-color: #2f2f2f;
   color: #fff;
+  -webkit-overflow-scrolling: touch;
 }
 
 .input-container {
