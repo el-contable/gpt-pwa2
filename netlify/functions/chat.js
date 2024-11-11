@@ -24,7 +24,7 @@ exports.handler = async (event) => {
           body: JSON.stringify({
               model: "gpt-4-turbo",
               messages: [{ role: "user", content: input }],
-              max_tokens: 1000,
+              max_tokens: 500,
           }),
       });
 
