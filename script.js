@@ -4,54 +4,90 @@ const mainInputBox = document.getElementById("inputBox");
 const chatContainer = document.getElementById("chatContainer");
 
 async function sendMessage(input) {
-    // Display user message
-    const userMessage = document.createElement("div");
-    userMessage.classList.add("message", "user-message");
-    userMessage.innerText = input;
-    chatContainer.appendChild(userMessage);
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+  // Display user message
+  const userMessage = document.createElement("div");
+  userMessage.classList.add("message", "user-message");
+  userMessage.innerText = input;
+  chatContainer.appendChild(userMessage);
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    // Placeholder for bot message that will be populated as chunks arrive
-    const botMessage = document.createElement("div");
-    botMessage.classList.add("message", "bot-message");
-    chatContainer.appendChild(botMessage);
+  // Placeholder for bot message
+  const botMessage = document.createElement("div");
+  botMessage.classList.add("message", "bot-message");
+  chatContainer.appendChild(botMessage);
 
-    try {
-        const response = await fetch("/.netlify/functions/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ input: input, stream: true }),
-        });
+  // Typing indicator
+  const typingIndicator = document.createElement("div");
+  typingIndicator.classList.add("typing-indicator");
+  typingIndicator.innerText = "ChatGPT is typing...";
+  chatContainer.appendChild(typingIndicator);
 
-        if (!response.ok) {
-            throw new Error("Network response was not ok");
-        }
+  try {
+      const response = await fetch("/.netlify/functions/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ input: input, stream: true }),
+      });
 
-        // Stream and decode each chunk as it arrives
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        let done = false;
+      if (!response.ok) {
+          throw new Error("Network response was not ok");
+      }
 
-        while (!done) {
-            const { value, done: streamDone } = await reader.read();
-            done = streamDone;
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+      let accumulatedText = ""; // To accumulate small chunks before displaying
 
-            if (value) {
-                // Append the chunk to the bot's message
-                botMessage.innerText += decoder.decode(value, { stream: true });
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }
-        }
+      while (!done) {
+          const { value, done: streamDone } = await reader.read();
+          done = streamDone;
 
-        if (botMessage.innerText === "") {
-            console.error("No reply field in response");
-            displayErrorMessage("Error: No response received from AI.");
-        }
-    } catch (error) {
-        console.error("Error in fetch operation:", error);
-        displayErrorMessage("Error: Unable to fetch response.");
-    }
+          if (value) {
+              accumulatedText += decoder.decode(value, { stream: true });
+
+              // If accumulatedText has enough content, append it to the message
+              if (accumulatedText.length > 20 || done) { // Adjust threshold based on desired smoothness
+                  const cleanText = formatResponseText(accumulatedText);
+                  botMessage.innerHTML += cleanText; // Using innerHTML allows structured content
+                  accumulatedText = ""; // Reset buffer
+                  chatContainer.scrollTop = chatContainer.scrollHeight;
+              }
+          }
+      }
+
+      chatContainer.removeChild(typingIndicator);
+
+      // Final check for empty response
+      if (botMessage.innerHTML === "") {
+          console.error("No reply field in response");
+          displayErrorMessage("Error: No response received from AI.");
+      }
+  } catch (error) {
+      console.error("Error in fetch operation:", error);
+      displayErrorMessage("Error: Unable to fetch response.");
+  }
 }
+
+// Helper function to clean and format response text
+function formatResponseText(rawText) {
+  // Parse JSON if necessary
+  let parsedText;
+  try {
+      const data = JSON.parse(rawText);
+      parsedText = data.reply || rawText; // Get the 'reply' if it's structured
+  } catch (e) {
+      parsedText = rawText; // Use raw text if parsing fails
+  }
+
+  // Clean unwanted characters
+  parsedText = parsedText.replace(/\\n/g, "<br>")  // Convert newlines to HTML breaks
+                         .replace(/\\["{}]/g, ""); // Remove escape sequences
+
+  // Wrap text in paragraph tags or any other desired HTML structure
+  return `<p>${parsedText}</p>`;
+}
+
+
 
 function displayErrorMessage(message) {
     const errorMessage = document.createElement("div");
